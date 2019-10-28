@@ -1,0 +1,235 @@
+<template>
+  <div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="row">
+          <div class="col-md-7">
+            <div class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-3 control-label">Result Per Page:</label>
+                <div class="col-sm-2 float-left">
+                  <select class="col-sm-5 form-control" v-model="per_page" @change="filterChanged">
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                    <option value="25">25</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-5">
+            <div class="form-horizontal" role="form">
+              <div class="form-group">
+                <label for="name_search" class="col-sm-3 control-label">Name:</label>
+                <div class="col-sm-8">
+                  <input type="text" id="name_search" class="form-control" placeholder="Insert category name here..." v-model="name" @change="filterChanged" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <hr>
+        <div class="table-responsive">
+        <table class="table table-striped table-advance table-hover">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Assets Associated</th>
+              <th scope="col">Date Added</th>
+              <th scope="col">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="i in data.data" v-if="data.data.length > 0">
+              <!-- Name -->
+              <td>{{ i.name }}</td>
+              <!-- Assets Associated -->
+              <td>{{ i.assets_count }}</td>
+              <!-- Date Added -->
+              <td>{{ i.created_at | formattedTime }}</td>
+              <!-- Action -->
+              <td>
+                <form v-bind:action="'' + category_url + '/' + i.id + '/delete'" method="post">
+                  <input type="hidden" name="_token" v-bind:value="'' + csrf + ''" />
+    							<a v-bind:href="'' + category_url + '/' + i.id + '/edit'">
+    								<button class="btn btn-primary btn-xs" type="button"><i class="fa fa-edit"></i> Edit</button>
+    							</a>
+    							<button class="btn btn-danger btn-xs" type="button" @click="deleteCategory(i.name)">
+    								<i class="fa fa-trash"></i> Delete
+    							</button>
+    						</form>
+              </td>
+            </tr>
+            <tr v-if="data.data.length < 1">
+              <td scope="row" colspan="6" align="center">
+                No Category Found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <ul class="pagination pull-right" role="navigation">
+          <!-- First Page -->
+          <li class="page-item" v-if="data.links.prev">
+            <a class="page-link" @click=fetchData(data.links.first) rel="first" aria-label="First">&lsaquo;&lsaquo;</a>
+          </li>
+          <li class="page-item disabled" aria-disabled="true" aria-label="First" v-else>
+            <span class="page-link" aria-hidden="true">&lsaquo;&lsaquo;</span>
+          </li>
+          <!-- // First Page -->
+          <!-- Previous Page -->
+          <li class="page-item" v-if="data.links.prev">
+            <a class="page-link" @click="fetchData(data.links.prev)" rel="prev" aria-label="Previous">&lsaquo;</a>
+          </li>
+          <li class="page-item disabled" aria-disabled="true" aria-label="Previous" v-else>
+            <span class="page-link" aria-hidden="true">&lsaquo;</span>
+          </li>
+          <!-- //Previous Page -->
+          <!-- Pagination Elements -->
+          <li class="page-item" v-for="page in pagesNumber" :class="{'active': page == data.meta.current_page}">
+            <a @click="goToPage(page)"><span class="page-link">{{ page }}</span></a>
+          </li>
+          <!-- //Pagination Elements -->
+          <!-- Next Page -->
+          <li class="page-item" v-if="data.links.next">
+            <a class="page-link" rel="next" aria-label="Next" @click="fetchData(data.links.next)">&rsaquo;</a>
+          </li>
+          <li class="page-item disabled" aria-disabled="true" aria-label="Next" v-else>
+            <span class="page-link" aria-hidden="true">&rsaquo;</span>
+          </li>
+          <!-- //Next Page -->
+          <!-- Last page -->
+          <li class="page-item" v-if="data.links.next">
+            <a class="page-link" rel="last" aria-label="Last" @click="fetchData(data.links.last)">&rsaquo;&rsaquo;</a>
+          </li>
+          <li class="page-item disabled" aria-disabled="true" aria-label="Last" v-else>
+            <span class="page-link" aria-hidden="true">&rsaquo;&rsaquo;</span>
+          </li>
+          <!-- // Last Page -->
+        </ul>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import axios from 'axios'
+import moment from 'moment'
+
+export default {
+    props: ['url', 'category_url', 'csrf'],
+    data: function() {
+        return {
+            isLoading				: false,
+            data					: {
+                data				: [],
+                links				: {},
+                meta				: {},
+            },
+            name        : null,
+            per_page    : 10,
+            offset		  : 4
+        }
+    },
+    filters: {
+        formattedTime: function(date) {
+            return moment(String(date)).format('DD/MM/YYYY hh:mm A');
+        }
+    },
+    methods: {
+        fetchData: function(url) {
+            this.isLoading = true;
+            axios.get(url)
+                .then((response) => {
+                    this.data = response.data;
+                }).catch((error) => {
+                    alert(error);
+                });
+            },
+            deleteCategory(name) {
+                event.preventDefault();
+                var form = event.target.form;
+                swal({
+                    title: "Are you sure?",
+                    text: "Are you sure you want to delete category (" + name + ")?",
+                    icon: "warning",
+                    buttons: {
+                        cancel: true,
+                        confirm: {
+                            text: "Delete"
+                        }
+                    },
+                    dangerMode: true,
+                    closeModal: true
+                }).then((isConfirm) => {
+                    if(isConfirm) {
+                        form.submit();
+                    }
+                });
+            },
+            goToPage: function (page) {
+                this.isLoading = true;
+                let url = this.data.links.first;
+                if(url.indexOf('?') !== -1) {
+                    url = url + '&page=' + page;
+                } else {
+                    url = url + '?page=' + page;
+                }
+                axios.get(url)
+                    .then((response) => {
+                        this.data = response.data;
+                    }).catch((error) => {
+                        console.log(error);
+                    });
+            },
+            filterChanged: function() {
+                let url = this.url;
+                var params = {};
+                if(this.name) {
+                    params.name = this.name;
+                }
+                if(this.per_page) {
+                    params.per_page = this.per_page;
+                }
+                let esc = encodeURIComponent;
+                let query = Object.keys(params)
+                    .map(k => esc(k) + '=' + esc(params[k]))
+                    .join('&');
+                this.fetchData(url + '?' + query);
+            }
+        },
+        computed: {
+            pagesNumber: function () {
+                if(!this.data.meta.to) {
+                    return [];
+                }
+                let pagesArray = [];
+                let from = this.data.meta.current_page - Math.floor(this.offset / 2);
+                if(from < 1) {
+                    from = 1;
+                }
+                let to = from + this.offset - 1;
+                if(to > this.data.meta.last_page) {
+                    to = this.data.meta.last_page;
+                }
+                while(from <= to) {
+                    pagesArray.push(from);
+                    from++;
+                }
+                return pagesArray;
+            }
+        },
+        mounted() {
+            this.fetchData(this.url);
+        }
+}
+</script>
