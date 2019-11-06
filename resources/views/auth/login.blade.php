@@ -5,7 +5,7 @@
 @section('content')
 <div class="login-box">
 	<div class="login-box-body">
-		<h3 align="center">OpenAsset.io</h3>
+		<h3 align="center">OpenAsset</h3>
 		<p class="login-box-msg">Please sign in to continue</p>
 		@if($errors->any())
 			@foreach($errors->all() as $error)
