@@ -1,9 +1,9 @@
 {
-    "/js/user_list.js": "/js/user_list.js",
-    "/js/category_user_list.js": "/js/category_user_list.js",
-    "/js/category_list.js": "/js/category_list.js",
-    "/js/borrow_user_list.js": "/js/borrow_user_list.js",
-    "/js/borrow_list.js": "/js/borrow_list.js",
+    "/js/asset_list.js": "/js/asset_list.js",
     "/js/asset_user_list.js": "/js/asset_user_list.js",
-    "/js/asset_list.js": "/js/asset_list.js"
+    "/js/borrow_list.js": "/js/borrow_list.js",
+    "/js/borrow_user_list.js": "/js/borrow_user_list.js",
+    "/js/category_list.js": "/js/category_list.js",
+    "/js/category_user_list.js": "/js/category_user_list.js",
+    "/js/user_list.js": "/js/user_list.js"
 }
